@@ -15,7 +15,12 @@ GO
 -- 4/20/2011 Case 2797 addedd Merrill Lynch
 -- 8/22/2013 6719 Added new JobIDs
 -- =============================================
-CREATE  PROCEDURE [dbo].[spBAC_InternalStats_Job]
+-- Author:		Emona Nakuci
+-- JIRA:			BCR-400
+-- Create date: 2019-10-14
+-- Description:	Replace hard-coded part with a control table BACJobCodes
+-- =============================================
+ALTER PROCEDURE [dbo].[spBAC_InternalStats_Job]
 	-- Add the parameters for the stored procedure here
 @FMailDate datetime,
 @LMailDate datetime
@@ -90,7 +95,7 @@ into #TempStat2
 from tblBAC_Stat inner join #TempStat on tblBAC_Stat.JobName = #TempStat.JobName
 --where Days > -1
 where (MailDate >= #TempStat.FirstMailDate) and (tblBAC_Stat.LastMailDate <= #TempStat.LastMailDate)
-group by  tblBAC_Stat.JobName, #TempStat.Seeds,
+group by tblBAC_Stat.JobName, #TempStat.Seeds,
 #tempStat.FirstMailDate, #tempStat.LastMailDate,
      #TempStat.TDays,
   #TempStat.USPSDays
@@ -98,68 +103,8 @@ group by  tblBAC_Stat.JobName, #TempStat.Seeds,
 
 insert into  #BACIntStats
 --Calculate Median
-Select JobName,JobName as Job_Name,
-Case JobName 
-	when 'AC' then 'Card'
-when 'AD' then 'Card'
-when 'AU' then 'Card'
-when 'SC' then 'Card'
-when 'SS' then 'Card'
-when 'BD' then 'Deposits'
-when 'BI' then 'Deposits'
-when 'CD' then 'Deposits'
-when 'CI' then 'Deposits'
-when 'CM' then 'Deposits'
-when 'CR' then 'Deposits'
-when 'CS' then 'Deposits'
-when 'HA' then 'Deposits'
-when 'HD' then 'Deposits'
-when 'HF' then 'Deposits'
-when 'HI' then 'Deposits'
-when 'HJ' then 'Deposits'
-when 'HR' then 'Deposits'
-when 'HS' then 'Deposits'
-when 'HX' then 'Deposits'
-when 'LI'  then 'Deposits'
-when 'LS' then 'Deposits'
-when 'MD' then 'Deposits'
-when 'MI' then 'Deposits'
-when 'MR' then 'Deposits'
-when 'MS' then 'Deposits'
-when 'NE' then 'Deposits'
-when 'NI' then 'Deposits'
-when 'NS' then 'Deposits'
-when 'UQ' then 'Deposits'
-when 'US' then 'Deposits'
-when 'UT' then 'Deposits'
-when 'WV' then 'Deposits'
-when 'WY' then 'Deposits'
-when 'WZ' then 'Deposits'
-when 'AE' then 'Deposits'
-when 'AF' then 'Deposits'
-when 'AG' then 'Deposits'
-when 'AH' then 'Deposits'
-when 'AI' then 'Deposits'
-when 'AJ' then 'Deposits'
-when 'AK' then 'Deposits'
-when 'AL' then 'Deposits'
-when 'AM' then 'Deposits'
-when 'AN' then 'Deposits'
-when 'AO' then 'Deposits'
-when 'AP' then 'Deposits'
-when 'XO' then 'Merrill Lynch'
-when 'ME' then 'Merrill Lynch'
-when 'VN' then 'Merrill Lynch'
-when 'VM' then 'Merrill Lynch'
-when 'VO' then 'Merrill Lynch'
-when 'VP' then 'Merrill Lynch'
-when 'VE' then 'Merrill Lynch'
-when 'XR' then 'Merrill Lynch'
-when 'VZ' then 'Merrill Lynch'
-when 'VH' then 'Merrill Lynch'
-when 'VF' then 'Merrill Lynch'
-when 'YP' then 'Merrill Lynch'
-	end as LOB
+Select #TempStat2.JobName,#TempStat2.JobName as Job_Name,
+jc.JobName as LOB
 	, Pieces, FirstMailDate,LastMailDate,Scans,[Exit Scans],
   Case 
 	when #TempStat2.[Day 0] > #TempStat2.[Median Count] then 0  
@@ -181,9 +126,8 @@ when 'YP' then 'Merrill Lynch'
  [Day 10], [Day 11], [Day 12], [Day 13], [Day 14], [Day 15], [Day 16], [Day 17], [Day 18], [Day 19],
 [Day 20], [Day 21], [Day 22], [Day 23], [Day 24], [Day 25], [Day 26], [Day 27], [Day 28] 
 
-
 from #TempStat2
-
+inner join BACJobCodes jc on #TempStat2.JobName = jc.JobCode
 
 
 Drop Table #TempStat  ------select * from #TempStat
