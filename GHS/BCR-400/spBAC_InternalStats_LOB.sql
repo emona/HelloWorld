@@ -15,7 +15,13 @@ GO
 -- 4/20/2011 Case 2797 addedd Merrill Lynch
 -- 8/22/2013 6719 Added new JobIDs
 -- =============================================
-CREATE PROCEDURE [dbo].[spBAC_InternalStats_LOB]
+-- Author:		Emona Nakuci
+-- JIRA:			BCR-400
+-- Create date: 2019-10-14
+-- Description:	Replace hard-coded part with a control table BACJobCodes
+-- =============================================
+
+ALTER PROCEDURE [dbo].[spBAC_InternalStats_LOB]
 	-- Add the parameters for the stored procedure here
 @FMailDate datetime,
 @LMailDate datetime
@@ -38,134 +44,15 @@ USPSDays decimal(28,9)
 
 Insert into #TempStat
 Select 
-Case tblBAC_Stat.JobName
-when 'AC' then 'Card'
-when 'AD' then 'Card'
-when 'AU' then 'Card'
-when 'SC' then 'Card'
-when 'SS' then 'Card'
-when 'BD' then 'Deposits'
-when 'BI' then 'Deposits'
-when 'CD' then 'Deposits'
-when 'CI' then 'Deposits'
-when 'CM' then 'Deposits'
-when 'CR' then 'Deposits'
-when 'CS' then 'Deposits'
-when 'HA' then 'Deposits'
-when 'HD' then 'Deposits'
-when 'HF' then 'Deposits'
-when 'HI' then 'Deposits'
-when 'HJ' then 'Deposits'
-when 'HR' then 'Deposits'
-when 'HS' then 'Deposits'
-when 'HX' then 'Deposits'
-when 'LI' then 'Deposits'
-when 'LS' then 'Deposits'
-when 'MD' then 'Deposits'
-when 'MI' then 'Deposits'
-when 'MR' then 'Deposits'
-when 'MS' then 'Deposits'
-when 'NE' then 'Deposits'
-when 'NI' then 'Deposits'
-when 'NS' then 'Deposits'
-when 'UQ' then 'Deposits'
-when 'US' then 'Deposits'
-when 'UT' then 'Deposits'
-when 'WV' then 'Deposits'
-when 'WY' then 'Deposits'
-when 'WZ' then 'Deposits'
-when 'AE' then 'Deposits'
-when 'AF' then 'Deposits'
-when 'AG' then 'Deposits'
-when 'AH' then 'Deposits'
-when 'AI' then 'Deposits'
-when 'AJ' then 'Deposits'
-when 'AK' then 'Deposits'
-when 'AL' then 'Deposits'
-when 'AM' then 'Deposits'
-when 'AN' then 'Deposits'
-when 'AO' then 'Deposits'
-when 'AP' then 'Deposits'
-when 'XO' then 'Merrill Lynch'
-when 'ME' then 'Merrill Lynch'
-when 'VN' then 'Merrill Lynch'
-when 'VM' then 'Merrill Lynch'
-when 'VO' then 'Merrill Lynch'
-when 'VP' then 'Merrill Lynch'
-when 'VE' then 'Merrill Lynch'
-when 'XR' then 'Merrill Lynch'
-when 'VZ' then 'Merrill Lynch'
-when 'VH' then 'Merrill Lynch'
-when 'VF' then 'Merrill Lynch'
-when 'YP' then 'Merrill Lynch'
-end
+jc.JobName
 , SUM(tblbac_Stat.SeedCount),
 MIN(tblbac_Stat.MailDate) as 'First Mail Date', MAX(LastMailDate) as 'Last Mail Date',
 (CAST((SUM(ExitScans * tblBAC_Stat.Days)) as decimal(28,9))/SUM(tblBAC_Stat.ExitScans)) as 'TravelDays',
   (CAST((SUM(ExitScans * tblBAC_stat.USPSDays)) as decimal(28,9))/SUM(tblBAC_Stat.ExitScans) ) as 'USPSDays'
 from tblBAC_Stat
+inner join BACJobCodes jc on tblBAC_Stat.JobName = jc.JobCode
 where (MailDate >= @FMailDate) and (tblBAC_Stat.LastMailDate <= @LMailDate)
-group by Case tblBAC_Stat.JobName
-when 'AC' then 'Card'
-when 'AD' then 'Card'
-when 'AU' then 'Card'
-when 'SC' then 'Card'
-when 'SS' then 'Card'
-when 'BD' then 'Deposits'
-when 'BI' then 'Deposits'
-when 'CD' then 'Deposits'
-when 'CI' then 'Deposits'
-when 'CM' then 'Deposits'
-when 'CR' then 'Deposits'
-when 'CS' then 'Deposits'
-when 'HA' then 'Deposits'
-when 'HD' then 'Deposits'
-when 'HF' then 'Deposits'
-when 'HI' then 'Deposits'
-when 'HJ' then 'Deposits'
-when 'HR' then 'Deposits'
-when 'HS' then 'Deposits'
-when 'HX' then 'Deposits'
-when 'LI' then 'Deposits'
-when 'LS' then 'Deposits'
-when 'MD' then 'Deposits'
-when 'MI' then 'Deposits'
-when 'MR' then 'Deposits'
-when 'MS' then 'Deposits'
-when 'NE' then 'Deposits'
-when 'NI' then 'Deposits'
-when 'NS' then 'Deposits'
-when 'UQ' then 'Deposits'
-when 'US' then 'Deposits'
-when 'UT' then 'Deposits'
-when 'WV' then 'Deposits'
-when 'WY' then 'Deposits'
-when 'WZ' then 'Deposits'
-when 'AE' then 'Deposits'
-when 'AF' then 'Deposits'
-when 'AG' then 'Deposits'
-when 'AH' then 'Deposits'
-when 'AI' then 'Deposits'
-when 'AJ' then 'Deposits'
-when 'AK' then 'Deposits'
-when 'AL' then 'Deposits'
-when 'AM' then 'Deposits'
-when 'AN' then 'Deposits'
-when 'AO' then 'Deposits'
-when 'AP' then 'Deposits'
-when 'XO' then 'Merrill Lynch'
-when 'ME' then 'Merrill Lynch'
-when 'VN' then 'Merrill Lynch'
-when 'VM' then 'Merrill Lynch'
-when 'VO' then 'Merrill Lynch'
-when 'VP' then 'Merrill Lynch'
-when 'VE' then 'Merrill Lynch'
-when 'XR' then 'Merrill Lynch'
-when 'VZ' then 'Merrill Lynch'
-when 'VH' then 'Merrill Lynch'
-when 'VF' then 'Merrill Lynch'
-when 'YP' then 'Merrill Lynch'
- end
+group by jc.JobName
 
 
 
@@ -208,68 +95,9 @@ SUM(Case when tblBAC_Stat.Days = 26 then ExitScans else 0 end) as 'Day 26',
 SUM(Case when tblBAC_Stat.Days = 27 then ExitScans else 0 end) as 'Day 27',
 SUM(Case when tblBAC_Stat.Days = 28 then ExitScans else 0 end) as 'Day 28'
 into #TempStat2
-from tblBAC_Stat inner join #TempStat on 
-Case tblBAC_Stat.JobName
-when 'AC' then 'Card'
-when 'AD' then 'Card'
-when 'AU' then 'Card'
-when 'SC' then 'Card'
-when 'SS' then 'Card'
-when 'BD' then 'Deposits'
-when 'BI' then 'Deposits'
-when 'CD' then 'Deposits'
-when 'CI' then 'Deposits'
-when 'CM' then 'Deposits'
-when 'CR' then 'Deposits'
-when 'CS' then 'Deposits'
-when 'HA' then 'Deposits'
-when 'HD' then 'Deposits'
-when 'HF' then 'Deposits'
-when 'HI' then 'Deposits'
-when 'HJ' then 'Deposits'
-when 'HR' then 'Deposits'
-when 'HS' then 'Deposits'
-when 'HX' then 'Deposits'
-when 'LI'  then 'Deposits'
-when 'LS' then 'Deposits'
-when 'MD' then 'Deposits'
-when 'MI' then 'Deposits'
-when 'MR' then 'Deposits'
-when 'MS' then 'Deposits'
-when 'NE' then 'Deposits'
-when 'NI' then 'Deposits'
-when 'NS' then 'Deposits'
-when 'UQ' then 'Deposits'
-when 'US' then 'Deposits'
-when 'UT' then 'Deposits'
-when 'WV' then 'Deposits'
-when 'WY' then 'Deposits'
-when 'WZ' then 'Deposits'
-when 'AE' then 'Deposits'
-when 'AF' then 'Deposits'
-when 'AG' then 'Deposits'
-when 'AH' then 'Deposits'
-when 'AI' then 'Deposits'
-when 'AJ' then 'Deposits'
-when 'AK' then 'Deposits'
-when 'AL' then 'Deposits'
-when 'AM' then 'Deposits'
-when 'AN' then 'Deposits'
-when 'AO' then 'Deposits'
-when 'AP' then 'Deposits'
-when 'XO' then 'Merrill Lynch'
-when 'ME' then 'Merrill Lynch'
-when 'VN' then 'Merrill Lynch'
-when 'VM' then 'Merrill Lynch'
-when 'VO' then 'Merrill Lynch'
-when 'VP' then 'Merrill Lynch'
-when 'VE' then 'Merrill Lynch'
-when 'XR' then 'Merrill Lynch'
-when 'VZ' then 'Merrill Lynch'
-when 'VH' then 'Merrill Lynch'
-when 'VF' then 'Merrill Lynch'
-when 'YP' then 'Merrill Lynch'
-end = #TempStat.JobName
+from tblBAC_Stat 
+inner join BACJobCodes jc on tblBAC_Stat.JobName = jc.JobCode
+inner join #TempStat on jc.JobName = #TempStat.JobName
 --where Days > -1
 where (MailDate >= #TempStat.FirstMailDate) and (tblBAC_Stat.LastMailDate <= #TempStat.LastMailDate)
 group by  #TempStat.JobName, #TempStat.Seeds,
